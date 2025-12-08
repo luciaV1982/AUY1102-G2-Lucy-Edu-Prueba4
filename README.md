@@ -3,12 +3,16 @@
 <br clear="left"/>
 
 # Evaluación Parcial 3  
+
 ## CI/CD con Docker Hub · SonarCloud · Snyk  
 
 **Asignatura:** Ciclo de Vida del Software I – Sección 001V  
-**Integrante:** Lucía Villalobos Ospina  Eduardo Urbina
-**Docente:** Valentina Paz  
-**Fecha de entrega:8 Diciembre 2025  
+
+**Integrante:** Lucía Villalobos Ospina - Eduardo Urbina
+
+**Docente:** Valentina Paz 
+
+**Fecha de entrega:** 8 Diciembre 2025  
 
 ---
 
@@ -499,7 +503,7 @@ Así se habilita la protección del ciclo de vida del software mediante segurida
 Se realiza la integración de la rama `develop` hacia `main` una vez finalizada
 la implementación completa del pipeline CI/CD.
 
-- ![Pull Request mergeado con éxito]()
+- ![Pull Request mergeado con éxito](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E26.merge_PR.png?raw=true)
 
 Este merge consolida la entrega final, integrando:
 ✔ Build & Push de imagen Docker  
@@ -509,11 +513,63 @@ Este merge consolida la entrega final, integrando:
 ✔ Flujo optimizado de integración continua
 
 
+#### 🔄 Creación de Pull Request para integrar cambios en `main`
+
+Se genera un Pull Request desde la rama `develop` hacia `main` para integrar los avances del pipeline CI/CD.
+
+- ![Creación de Pull Request desde develop hacia main](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E27.png?raw=true)
+
+Esto permite validar los cambios antes de aplicarlos a la rama principal.
+---
+
+#### 🔍 Comparación de cambios antes del merge
+
+Se revisan los commits y archivos modificados para asegurar que las mejoras aplicadas en CI/CD están correctas y listas para desplegar.
+
+- ![Comparación de cambios del Pull Request](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E28.png?raw=true)
+
+De esta forma se garantiza que solo código confiable llega al entorno principal del proyecto.
+
+
+## 4. Conclusiones
+
+La implementación del pipeline CI/CD permitió automatizar las etapas clave del ciclo de vida del software, cumpliendo con el objetivo de integrar herramientas para **automatización, calidad, despliegue y seguridad**.
+
+Se logró:
+
+- Automatizar pruebas y despliegues mediante **GitHub Actions**
+- Mantener un desarrollo controlado utilizando **GitFlow**
+- Asegurar calidad del código a través de **pruebas unitarias**
+- Construir y publicar una imagen Docker en **Docker Hub** de forma continua
+- Preparar el entorno para análisis de seguridad con **Snyk** y **Docker Scout**
+- Facilitar futuras integraciones de calidad y mantenibilidad con **SonarCloud**
+
+Con este pipeline se garantiza una **detección temprana de errores**, control continuo del software y una base sólida para la evolución del proyecto hacia prácticas DevSecOps más avanzadas.
+
+En conclusión, la evaluación fue exitosa, demostrando cómo la automatización mejora la confiabilidad, seguridad y velocidad del desarrollo moderno.
+
+
+---
+
+## 5. Cierre
+
+Este proyecto permitió aplicar prácticas reales de automatización utilizadas en la industria tecnológica, logrando una integración eficiente entre:
+
+✔ Git y GitHub  
+✔ Docker  
+✔ GitHub Actions  
+✔ Pruebas automatizadas  
+
+La solución obtenida sienta las bases para futuras mejoras, tales como:
+
+- Integración de análisis de seguridad con **Snyk** y **Docker Scout**
+- Evaluación de calidad con **SonarCloud**
+- Despliegue a un entorno productivo
+
+En conclusión, la implementación del pipeline fue **exitosa**, cumpliendo con los objetivos planteados y demostrando la relevancia de las prácticas DevOps en el aseguramiento de calidad del software moderno. 🚀🐳
 
 
 
 
-📘 Repositorio oficial del grupo:
-https://github.com/edoturb/AUY1102-001V-2025--G2
 
 
