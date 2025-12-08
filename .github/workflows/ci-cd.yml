@@ -64,5 +64,12 @@ jobs:
         with:
           command: test
           args: --severity-threshold=high
-          # Test de SonarCloud - segunda ejecución
+        # Test de SonarCloud - segunda ejecución (comentario ok)
 
+      - name: Docker Scout - Vulnerability Analysis
+        if: github.event_name == 'push'
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          only-fixed: true
