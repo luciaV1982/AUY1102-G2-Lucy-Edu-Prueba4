@@ -2,322 +2,515 @@
 
 <br clear="left"/>
 
-# Evaluación Parcial 2  
-## Desarrollo de Pruebas Unitarias y Análisis de Seguridad II  
+# Evaluación Parcial 3  
+## CI/CD con Docker Hub · SonarCloud · Snyk  
 
 **Asignatura:** Ciclo de Vida del Software I – Sección 001V  
-**Integrantes:** Lucía Villalobos – Eduardo Urbina  
+**Integrante:** Lucía Villalobos Ospina  Eduardo Urbina
 **Docente:** Valentina Paz  
-**Fecha de entrega:** 09 de noviembre de 2025  
+**Fecha de entrega:8 Diciembre 2025  
 
 ---
 
 ## 1. Objetivo de la evaluación
 
-El propósito de esta evaluación es aplicar los conocimientos del ciclo de vida del software, centrando el trabajo en la creación, ejecución y análisis de pruebas unitarias, junto con la evaluación de seguridad mediante herramientas automáticas.  
+El objetivo de esta evaluación es implementar un pipeline **CI/CD completo** aplicando herramientas del ciclo de vida del software orientadas a **automatización, calidad, despliegue y seguridad**.
+
 El proyecto integra los siguientes componentes:
 
-- Uso de **Git y GitHub** como herramientas de control de versiones.  
-- Implementación de **pruebas unitarias y de cobertura** con Jest.  
-- Aplicación de metodologías **TDD (Test Driven Development)** y **BDD (Behavior Driven Development)**.  
-- Ejecución de análisis de calidad con **ESLint**.  
-- Evaluación de vulnerabilidades con **Dependabot**, **CodeQL Analysis** y **SonarQube Cloud**.  
-- Aplicación de remediaciones y verificación posterior de seguridad.
+- Versionamiento con **Git y GitHub** usando **GitFlow**
+- Automatización de pruebas con **GitHub Actions**
+- Construcción de imagen Docker y publicación en **Docker Hub**
+- Análisis estático de seguridad con **Snyk**
+- Análisis de calidad y mantenibilidad con **SonarCloud**
+- Análisis de vulnerabilidades en contenedores con **Docker Scout**
+
+Este flujo garantiza un desarrollo continuo con **detección temprana de errores** y **validación automática** antes del despliegue.
 
 ---
 
-## 2. Fase 1 – Control de versiones con Git y GitHub
+## 2. Fase 1 – Control de versiones con Git y GitHub (GitFlow)
 
-### 2.1. Clonación y carga del repositorio
+### 2.1. Fork y clonación del repositorio
 
-Se clonó el repositorio base proporcionado por la docente:
-```markdown
+Se realizó un **fork** del repositorio base de la evaluación, permitiendo trabajar sobre una copia propia.
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E01-Fork-creado.png?raw=true)
+
+Luego se clonó la copia a la máquina local:
+
+git clone https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3.git
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E02-Clonar-Repo.png?raw=true)
+
+```
+
+
+
+```
+2.2. Creación de la rama develop
+Como buena práctica de GitFlow, se creó una rama de desarrollo aislando cambios de la rama principal (main):
+
+
+git checkout -b develop
+git push -u origin develop
+
+
+Creación local de develop
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E03-Rama-Develop-Creada.png?raw=true)
+
+Rama develop publicada en GitHub
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E04-Rama-Develop-Subida-a-GitHub.png?raw=true)
+
+
+```
+2.3. Organización inicial del proyecto
+
+Se crearon las carpetas base del proyecto:
+
+```
+mkdir src
+mkdir tests
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E05-Carpetas-src-y-tests-creadas.png?raw=true)
+
+```
+En src/ se creó el archivo principal app.py con las funciones base a utilizar en CI/CD:
+
+```
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E06-Archivo-app-creado.png?raw=true)
+
+
+### 2.4. Creación de archivos iniciales del proyecto
+Se crearon los archivos base necesarios para iniciar la construcción del pipeline de CI/CD con Docker y Pytest.
+
+---
+
+####  2.4.1. Archivo de pruebas `test_app.py`
+
+Este archivo incluye pruebas unitarias para validar las funciones principales del proyecto: sumar, restar, multiplicar, dividir y manejo de errores.
+
+```python
+from src.app import sumar, restar, multiplicar, dividir
+import pytest
+
+def test_sumar():
+    assert sumar(2, 3) == 5
+
+def test_restar():
+    assert restar(5, 2) == 3
+
+def test_multiplicar():
+    assert multiplicar(4, 3) == 12
+
+def test_dividir():
+    assert dividir(10, 2) == 5
+
+def test_dividir_por_cero():
+    try:
+        dividir(10, 0)
+        assert False  # Si llega aquí, la prueba debe fallar
+    except ValueError:
+        assert True
+
+```
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E07-Tests-creados.png?raw=true )
+
+####  2.4.2. Archivo requirements.txt
+
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E08-requirements-creado.png?raw=true)
+
+
+```
+
+---
+
+#### 2.4.3. Archivo Dockerfile
+
+
+Se configuró el Dockerfile para:
+✔ Preparar el entorno de ejecución
+
+✔ Ejecutar automáticamente las pruebas al construir la imagen
+
+✔ Ejecutar el código principal al iniciar el contenedor
+
+
+# Imagen base oficial de Python
+FROM python:3.11-slim
+
+# Directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiar dependencias del proyecto
+COPY requirements.txt .
+
+# Instalar dependencias
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar todo el código del proyecto
+COPY . .
+
+# Ejecutar pruebas en la construcción de la imagen
+RUN pytest -q
+
+# Comando por defecto al iniciar el contenedor
+CMD ["python", "src/app.py"]
+
+
+```
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E09-Dockerfile-creado.png?raw=true)
+
+Creamos un Dockerfile que instala dependencias, copia el código y ejecuta las pruebas unitarias en el proceso de construcción para asegurar calidad antes del despliegue.
+
+
+---
+
+### 2.5 Ejecución de pruebas unitarias con Pytest
+
+Se instalaron las dependencias definidas en requirements.txt:
+
 ```bash
-git clone https://github.com/Fundacion-Instituto-Profesional-Duoc-UC/AUY1102-Pipeline.git
-Posteriormente, se eliminó el historial .git del proyecto y se inicializó uno nuevo, agregando el repositorio del grupo:
+pip install -r requirements.txt
 
-
-rm -rf .git
-git init
-git add .
-git commit -m "Versión inicial sin credenciales"
-git branch -M main
-git remote add origin https://github.com/edoturb/AUY1102-001V-2025--G2.git
-git push -u origin main --force
 ```
-Clonación Edurado
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/f9ec2dfdc15447733f5ea6860508d091f8c1d0ad/Clonacion%20Edu.png)
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E10.png?raw=true)
 
 
-Clonación Lucia
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Clonacion%20Lucy.png?raw=true)
+Luego se ejecutaron las pruebas unitarias:
 
 
-Origin apunta al repo de la profe:
+pytest -q
+```
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/git%20remote.png?raw=true)
+```
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E11.png?raw=true)
 
-
-Borramos el origin actual:
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/git%20remote%20-v.png?raw=true)
-
-
-Añade el remoto nuevo, del grupo:
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/git%20remote%20add%20origin.png?raw=true)
+Tras corregir la estructura del proyecto, las pruebas se ejecutaron exitosamente:
 
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/git%20status.png?raw=true)
-
-Remonbramos rama master por main para tener buenas practias y más estándar
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/master%20a%20main.png?raw=true)
-
-No nos dejo hacer push porque dentro del commit hay un archivo **credentials.yml** con algo en la línea 1 que parece un token de GitHub”.
-
-Aunque ya borramos el .git viejo, en este nuevo commit todavía está ese credentials.yml con algo **sospechoso**.
-
-Sacaremos ese secreto del commit y recién ahí volvelveromos a hacer push.
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/commit%20y%20push.png?raw=true)
-
-Con esto, el commit viejo (que tenía el supuesto secreto) deja de existir; ahora el último commit ya viene limpio.
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen10.png?raw=true)
-
-(forced update) → el push forzado funcionó (reemplazó la historia anterior).
-
-No hay advertencias de secretos ni errores de protección 🚫🔑.
-Logramos subir correctamente el código base del proyecto a nuestro repositorio de grupo
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen11.png?raw=true)
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E12%20-Pytest%20ejecutado%20correctamente.png?raw=true)
 
 
 
-## 3. Fase 2 – Colaboración y control de cambios
-**Lucía Villalobos:** ejecución de pruebas unitarias, análisis de cobertura, configuración de ESLint y documentación (este README).
+### 3. Ejecución inicial del Workflow CI/CD
 
-**Eduardo Urbina:** configuración y ejecución de herramientas de seguridad (Dependabot, CodeQL, SonarQube) y aplicación de remediaciones.
+Una vez configurado el archivo del workflow en GitHub Actions, se realizó el primer push desde la rama `develop`, generando la primera ejecución automatizada del pipeline.
 
-
-**3.1. Pruebas unitarias y cobertura de código**
-
-Instalación de dependencias:
-
-Se ejecutó el siguiente comando para instalar los paquetes necesarios.
-
-Durante la instalación, npm reportó varias vulnerabilidades en dependencias externas, lo cual permitió posteriormente aplicar herramientas de análisis y remediación.
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen13.png?raw=true)
-
-**3.2. Ejecución de pruebas unitarias**
-
-Las pruebas unitarias fueron ejecutadas con Jest mediante:
-
-**npm run test:unit**
-
-Resultado general:
-
-- Test Suites: 10 passed / 10 total
-- Tests: 18 passed / 18 total
-- Incluye prueba personalizada sumar.test.ts.
-
-Durante la ejecución se detectaron advertencias relacionadas con fetch hacia api.example.com, sin impacto en la ejecución.
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen14.png?raw=true)
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen15.png?raw=true)
-
-**3.3. Análisis de cobertura**
-
-Se midió la cobertura total del código con:
-
-**npm run test:coverage**
-
-Resultados obtenidos:
-
-- Statements: 43.28 %
-- Branches: 60 %
-- Functions: 56.66 %
-- Lines: 43.28 %
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen16.png?raw=true)
-
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen17.png?raw=true)
-
-Este reporte permitió identificar áreas del código sin cobertura de pruebas, apoyando la mejora continua del desarrollo.
-
-## 4. Fase 3 – Metodologías de prueba (TDD y BDD)
-
-**4.1. Ejemplo implementado**
-
-Se creó una función simple para ejemplificar TDD y BDD:
-
-```ts
-// src/sumar.ts
-export function sumar(a: number, b: number): number {
-  return a + b;
-}
+---
 
 
-Y su prueba unitaria:
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E13-primera%20ejecuci%C3%B3n%20del%20pipeline%20fallo.png?raw=true)
+
+En esta primera ejecución, el pipeline falló debido a que aún no se encontraba configurada la autenticación con Docker Hub para la publicación de la imagen Docker.
 
 
-// test/sumar.test.ts
-import { sumar } from "../src/sumar";
+---
 
-describe("sumar()", () => {
-  // TDD: prueba definida antes de la implementación
-  it("debería devolver la suma de dos números", () => {
-    expect(sumar(2, 3)).toBe(5);
-  });
+### 3.1 Creación de token de Docker Hub
 
-  // BDD: descripción del comportamiento esperado
-  it("Given two positive numbers, when I call sumar, then I get their sum", () => {
-    expect(sumar(10, 5)).toBe(15);
-  });
-});
+Para permitir que GitHub Actions pueda autenticarse remotamente y publicar nuestra imagen Docker en Docker Hub, se creó un **Personal Access Token (PAT)** con permisos de lectura y escritura.
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E14.png?raw=true)
+
+Este token luego se configuró como secreto en GitHub (`DOCKERHUB_TOKEN`), y el nombre de usuario (`DOCKERHUB_USERNAME`) también se registró como variable segura.
+
+
+---
+
+### 3.2 Workflow CI/CD funcional
+
+Posteriormente, se actualizó el archivo `ci-cd.yml` para incluir correctamente las credenciales seguras, habilitando la construcción y despliegue continuo del proyecto.
+
+- ![A](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E15-workflow-ci-cd-creado.png?raw=true)
 
 ```
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen18.png?raw=true)
+Con estas configuraciones aplicadas, el workflow quedó registrado y listo para ejecutar el proceso completo de CI/CD de forma automática en cada push o pull request.
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen19.png?raw=true)
+```
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen20.png?raw=true)
+### 3.3 Evidencia de configuración y autenticación con Docker Hub
 
-**4.2. Corrimos nuevamente las pruebas**
+Después de crear el token y configurar las credenciales como secretos de GitHub, se realizó un commit y push para ejecutar nuevamente el workflow de CI/CD.
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen20.png?raw=true)
+📌 A continuación, se muestran las evidencias del proceso:
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen21.png?raw=true)
+---
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen22.png?raw=true)
+#### 📌 Commit y push del workflow actualizado
 
-**4.3. Análisis**
+Se observa la ejecución del comando `git add .`, el commit con el mensaje correspondiente y el `git push` hacia el repositorio remoto en GitHub.
 
-**TDD:** permitió diseñar el código guiado por las pruebas, aplicando el ciclo Red → Green → Refactor.
 
-**BDD:** permitió expresar el comportamiento esperado en un lenguaje más cercano al negocio.
+- ![Evidencia Commit & Push](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E16-Commit%20+%20Push%20a%20GitHub.png?raw=true)
 
-Ambos enfoques promueven un desarrollo más confiable y orientado a calidad.
+---
 
-## 5. Fase 4 – Análisis de calidad del código (ESLint)
-Se utilizó ESLint para revisar la calidad del código:
+#### 🔐 Registro del nombre de usuario como secreto seguro
 
-npx eslint .
-Inicialmente, se presentó el error:
+Se configuró el secreto `DOCKERHUB_USERNAME` para la autenticación en Docker Hub desde GitHub Actions.
 
-ESLint couldn't find the config "airbnb-typescript/base" to extend from.
 
-Para resolverlo, se instalaron las dependencias necesarias:
+- ![Secreto Docker Hub Username](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17.png?raw=true)
 
-npm install -D eslint eslint-config-airbnb-typescript eslint-config-airbnb-base eslint-plugin-import @typescript-eslint/eslint-plugin @typescript-eslint/parser
-Aun así, la configuración continuó arrojando advertencias, pero permitió comprender el propósito del análisis estático de código en el ciclo de desarrollo.
+```
+---
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen41.png?raw=true)
+#### 🔐 Registro del token del Docker Hub como secreto final
 
-## 6. Fase 5 – Análisis de vulnerabilidades y seguridad
+```
+Se agregó el `DOCKERHUB_TOKEN`, completando la autenticación segura necesaria para que el pipeline pueda publicar imágenes en Docker Hub.
 
-**6.1. Dependabot**
+- ![Secreto Docker Hub Token](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17b%20Tokens.png?raw=true)
 
-Se habilitaron Dependabot Alerts y Security Updates en GitHub, generando reportes automáticos de vulnerabilidades en las dependencias del proyecto.
+```
+---
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen23.png?raw=true)
+Estas configuraciones permiten que GitHub Actions pueda autenticarse correctamente contra Docker Hub durante la construcción y despliegue continuo de la imagen Docker del proyecto.
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen24.png?raw=true)
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen25.png?raw=true)
+### 3.4 Ejecución del Workflow desde GitHub Actions
 
+Una vez configuradas las credenciales y actualizado el archivo `ci-cd.yml`, se ejecutó el workflow de CI/CD desde la sección **Actions** del repositorio.
 
+A continuación se muestran las evidencias del proceso:
 
+---
 
+#### ▶️ Revisión inicial del estado del workflow
 
-**6.2. CodeQL Analysis**
+Se visualiza el flujo de trabajo con el estado de ejecución correspondiente al commit que habilitó la integración continua.
 
-Configuramos CodeQL desde la pestaña Security 
+```
+- ![Ejecución CI/CD lista para re-ejecutar](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17C.png?raw=true)
 
-→ Code scanning, generando análisis automáticos en cada push.
+---
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen26.png?raw=true)
+#### 🔁 Re-ejecución del workflow manualmente
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen%2027.png?raw=true)
+Se seleccionó la opción **Re-run jobs** para volver a ejecutar el pipeline y validar que la configuración fuera correcta.
 
-Nueva configuración lista
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen28.png?raw=true)
+- ![Re-run del workflow](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17d.png?raw=true)
 
-Se configuró GitHub CodeQL para análisis automatizado del código fuente.
-El flujo realiza escaneos cada 1 hora. Se activo Dependabot alerts y security updates
+---
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen%2029.png?raw=true)
+#### 🏗️ Workflow en ejecución: construcción, prueba y despliegue
 
+Se observa el proceso automático ejecutándose correctamente en GitHub Actions, siguiendo el archivo `ci-cd.yml`.
 
+- ![Workflow en curso](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17e.png?raw=true)
 
+---
 
-**6.3. SonarQube Cloud**
+Estos pasos confirman la integración correcta del repositorio con GitHub Actions y el despliegue continuo automatizado basado en cada cambio realizado en la rama `develop`.
 
-Configuramos SonarQube Cloud, integrando el repositorio con un análisis externo de vulnerabilidades y calidad de código.
 
-El análisis detectó vulnerabilidades de severidad medium y low, además de recomendaciones de estilo y complejidad.
+### 3.5 Validación final del Workflow CI/CD y despliegue de imagen Docker
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen30.png?raw=true
-)
+Una vez corregida la configuración de credenciales en GitHub Actions, se volvió a ejecutar el workflow logrando un resultado exitoso. Esto confirma que el CI/CD está funcionando correctamente y publicando la imagen Docker en Docker Hub.
 
-Vulnerabilidades detectadas
+📌 Evidencias del resultado:
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen31.png?raw=true)
+---
 
-Detecta una critica, token en archivo npm
+#### 🟢 Ejecución exitosa del workflow
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen32.png?raw=true)
+Se observa que el pipeline completó correctamente todas las etapas: construcción, pruebas y despliegue, sin errores.
 
-Eliminamos Token sensible  desde archivo .npmrc
+- ![Workflow exitoso en GitHub Actions](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17f.png?raw=true)
 
-![image alt](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen33.png?raw=true)
+---
 
+#### 📌 Historial de ejecuciones indicando estado exitoso
 
-Tras la detección de las vulnerabilidades y problemas de mantenibilidad, se procedió a aplicar las siguientes **acciones correctivas** para mejorar la calidad y seguridad del proyecto:
+El registro de acciones muestra la ejecución con estado **Éxito** en la rama `desarrollar`.
 
-### **7.1. Revocación y reemplazo del token de GitHub**
-Se revocó el token comprometido y se generó un nuevo **Personal Access Token (PAT)** desde la configuración de GitHub, eliminando toda referencia al anterior.  
-El nuevo token fue almacenado de forma segura mediante una variable de entorno en el archivo `~/.zshrc`, siguiendo las buenas prácticas de seguridad recomendadas.
+- ![Registro exitoso del workflow](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E17g.png?raw=true)
 
-- ![Generación de nuevo token en GitHub](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen35.png?raw=true)
-- ![Configuración del token como variable de entorno](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen36.png?raw=true)
+---
 
-### **7.2. Limpieza del archivo `.npmrc`**
-Se eliminó la línea que contenía el token expuesto y se reemplazó por una configuración segura sin credenciales directas.  
-Esto permitió eliminar la alerta de seguridad clasificada como **Blocker**.
+#### 🐳 Imagen publicada correctamente en Docker Hub
 
-- ![Archivo .npmrc corregido](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen34.png?raw=true)
+Se confirma que la imagen fue enviada al repositorio `lucia1982/auy1102-prueba3` en Docker Hub.
 
-### **7.3. Corrección de métodos vacíos (Code Smells)**
-En el archivo `src/quality/errores-object.ts`, SonarQube marcó los métodos `getUserData()` y `sendEmail()` como vacíos.  
-Para resolver el problema, se agregó un comentario `//TODO` dentro del método, dejando explícita la intención de implementación futura. Esto elimina el error sin afectar la lógica del programa.
+- ![Repositorio de Docker Hub con la imagen subida](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E18.png?raw=true)
 
-- ![Corrección de métodos vacíos](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen39.png?raw=true)
-- ![Commit de remediación](https://github.com/edoturb/AUY1102-001V-2025--G2/blob/main/Evidencias/Imagen40.png?raw=true)
+---
 
-### **7.4. Confirmación de remediaciones**
-Finalmente, se ejecutó un nuevo análisis en **SonarQube Cloud**, verificando que las vulnerabilidades críticas habían sido mitigadas y las observaciones de mantenibilidad disminuidas, cumpliendo así con las políticas de calidad establecidas en el proyecto.
+Gracias a esta integración, cada cambio en el repositorio puede generar automáticamente una nueva versión de la imagen Docker, garantizando un flujo de entrega continuo y controlado.
 
 
+#### 🔎 Visualización detallada del repositorio de Docker Hub
 
-## 🧩 8. Conclusiones
+Se evidencia que la imagen fue correctamente empujada al repositorio `lucia1982/auy1102-prueba3`, mostrando la etiqueta generada por el pipeline, el sistema operativo base y la confirmación del push realizado hace pocos minutos.
 
-El desarrollo de este proyecto permitió consolidar de manera práctica los conocimientos sobre el **Ciclo de Vida del Software**, aplicados a las áreas de **pruebas, calidad y seguridad**.  
+- ![Vista del repositorio en Docker Hub](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E18a.png?raw=true)
 
-Se demostró la efectividad de las metodologías **TDD (Test Driven Development)** y **BDD (Behavior Driven Development)** para generar código más **robusto, mantenible y verificable**, fomentando un enfoque preventivo ante errores.  
+Esta vista confirma la disponibilidad de la imagen para su despliegue o ejecución en cualquier entorno Docker.
 
-Asimismo, la integración de herramientas automatizadas como **ESLint**, **Dependabot**, **CodeQL** y **SonarQube Cloud** fortaleció los procesos de **aseguramiento de calidad**, facilitando la **detección temprana de vulnerabilidades**, la mejora de la mantenibilidad y el cumplimiento de buenas prácticas de desarrollo seguro.  
 
-El uso de **Git y GitHub** resultó esencial para garantizar la **colaboración, trazabilidad y control de versiones**, optimizando la gestión del trabajo en equipo y la documentación de los avances.  
 
-En conjunto, se logró un **flujo de desarrollo integral y alineado con los estándares de la industria**, abarcando desde la planificación y codificación hasta la validación, corrección y mejora continua del producto final.
+#### 🟢 Ejecución exitosa del workflow CI/CD
+
+Se confirma que el pipeline completó correctamente todas las etapas: construcción de la imagen Docker, pruebas y despliegue.
+
+- ![Evidencia – Docker Build Exitoso](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E18b.png?raw=true)
+
+Esta evidencia demuestra que la imagen Docker fue construida localmente sin errores.
+---
+
+#### 🚀 Pipeline exitoso en GitHub Actions
+
+El historial de ejecuciones indica que el workflow finalizó con estado **Éxito** en la rama `desarrollar`.
+
+- ![Evidencia – Pipeline Exitoso GitHub Actions](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E19.png?raw=true)
+
+Esta ejecución valida la correcta automatización del proceso CI/CD.
+
+
+#### 🐳 Validación local de la imagen Docker ejecutada desde Docker Hub
+
+Se prueba la ejecución del contenedor desplegando la aplicación localmente en el puerto `5000`, usando la imagen publicada en Docker Hub.
+
+- ![Ejecución del contenedor en modo detached](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E20-2_run_detached.png?raw=true)
+
+Esta salida confirma que el contenedor se encuentra corriendo exitosamente en segundo plano.
+---
+
+#### 📌 Verificación del funcionamiento de Docker en el sistema
+
+Se valida el correcto funcionamiento del motor Docker ejecutando la imagen de prueba `hello-world`.
+
+- ![Hello World Docker funcionando](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E20-hello-world-ok.png?raw=true)
+
+Se confirma que la instalación de Docker está operativa y lista para manejo de contenedores.
+---
+
+#### 🔄 Descarga de la imagen desde Docker Hub
+
+La imagen `luciaV1982/auy1102-prueba3` es descargada exitosamente desde el repositorio remoto.
+
+- ![Docker Pull desde Docker Hub](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E20-Parte_1.png?raw=true)
+
+Esto valida que la imagen se encuentra accesible públicamente para despliegues en cualquier entorno.
+
+
+#### 📦 Verificación de contenedores creados localmente
+
+Se listan los contenedores existentes en el entorno Docker para validar que la imagen ejecutada se encuentra registrada correctamente en el sistema.
+
+- ![Listado de contenedores creados](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E21_container_created.png?raw=true)
+
+Esta visualización confirma que el contenedor correspondiente a la imagen del proyecto se ejecutó de forma satisfactoria.
+---
+
+#### 🧪 Integración del proyecto con SonarCloud para análisis de calidad
+
+Se configura SonarCloud con el repositorio del proyecto alojado en GitHub con el objetivo de analizar la calidad del código fuente.
+
+- ![Acceso al panel principal del proyecto en SonarCloud](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E21b.png?raw=true)
+
+Este panel permitirá visualizar métricas de seguridad, fiabilidad y mantenibilidad del código.
+---
+
+#### 🔗 Importación del repositorio de GitHub hacia SonarCloud
+
+Se selecciona e importa el repositorio del proyecto para habilitar los análisis automáticos tras cada ejecución del pipeline CI/CD.
+
+- ![Importación del repositorio desde GitHub hacia SonarCloud](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E21-Proyecto%20importado%20desde%20GitHub%20a%20SonarCloud.png?raw=true)
+
+Esto habilitará la generación de reportes de calidad del código en cada push hacia GitHub.
+
+
+
+
+#### 📋 Revisión de logs del contenedor
+
+Se verifican los registros del contenedor Docker para comprobar que no existan errores de ejecución.
+
+- ![Logs del contenedor sin errores](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E22_logs_vacios.png?raw=true)
+
+Esto confirma que el contenedor finalizó correctamente sin fallas.
+---
+
+#### 🛠 Configuración inicial del proyecto en SonarCloud
+
+Desde la sección **Información**, se pueden consultar los perfiles de calidad aplicados y configuraciones del análisis.
+
+- ![Panel de información del proyecto en SonarCloud](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E23b.png?raw=true)
+
+Aquí se validan los estándares de análisis aplicados al código.
+---
+
+#### 🏷 Configuración de insignias y parámetros del análisis
+
+Se accede a la vista donde se definen los parámetros del proyecto, clave, organización e insignias para su publicación.
+
+- ![Configuración de Insignias y parámetros de proyecto](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E23c.png?raw=true)
+
+Esto permite vincular el estado de calidad del código con el README.
+---
+
+#### 🔐 Generación de token de seguridad en SonarCloud
+
+Se genera un token personalizado para permitir que GitHub Actions ejecute el análisis automatizado del código.
+
+- ![Generación de token SONAR_TOKEN](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E24_token_sonar1.png?raw=true)
+
+Este token se usará como credencial segura en el pipeline.
+---
+
+#### 🗝️ Agregado de secretos de SonarCloud en GitHub
+
+Los valores `SONAR_ORG`, `SONAR_PROJECT_KEY` y `SONAR_TOKEN` se almacenan como secretos de seguridad en GitHub.
+
+- ![Secretos de SonarCloud configurados en GitHub](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E24_tokens_sonar.png?raw=true)
+
+Estos secretos permiten la integración segura entre SonarCloud y CI/CD sin exponer credenciales.
+
+
+#### 🔐 Configuración del token de seguridad para Snyk
+
+Se agrega el token `SNYK_TOKEN` como secreto dentro del repositorio para habilitar
+el análisis automatizado de vulnerabilidades en el pipeline CI/CD.
+
+- ![Secreto SNYK_TOKEN agregado en GitHub](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E25_tokensnyk.png?raw=true)
+
+Esto garantiza la comunicación segura entre GitHub Actions y Snyk Security Scan.
+---
+
+#### 🛡️ Conexión del proyecto con Snyk Security
+
+El repositorio del proyecto es importado correctamente en Snyk desde GitHub,
+permitiendo ejecutar análisis de vulnerabilidades en dependencias y código base.
+
+- ![Proyecto importado y conectado con Snyk](https://github.com/luciaV1982/AUY1102-G2-Lucy-Edu-Prueba3/blob/main/Evidencias-Prueba3-Lucy-Edu/E25snyk.png?raw=true)
+
+Así se habilita la protección del ciclo de vida del software mediante seguridad continua.
+---
+
+#### 🔁 Merge a rama main con CI/CD completamente funcional
+
+Se realiza la integración de la rama `develop` hacia `main` una vez finalizada
+la implementación completa del pipeline CI/CD.
+
+- ![Pull Request mergeado con éxito]()
+
+Este merge consolida la entrega final, integrando:
+✔ Build & Push de imagen Docker  
+✔ Análisis con Snyk Security Scan  
+✔ Análisis de calidad con SonarCloud  
+✔ Gestión de secretos segura  
+✔ Flujo optimizado de integración continua
+
+
+
+
 
 
 📘 Repositorio oficial del grupo:
